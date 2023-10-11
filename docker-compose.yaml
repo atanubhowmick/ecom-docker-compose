@@ -1,0 +1,60 @@
+version: '3'
+services:
+  ecom-registration-server:
+    build:
+      context: ../ecom-registration-server/
+    image: ecom-registration-server
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ecom-registration-server:8085/eureka/
+    tty: false
+    ports:
+      - 8085:8085
+  ecom-config-server:
+    build:
+      context: ../ecom-config-server/
+    image: ecom-config-server
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ecom-registration-server:8085/eureka/
+    depends_on:
+      - ecom-registration-server
+  ecom-cache-server:
+    build:
+      context: ../ecom-cache-server/
+    image: ecom-cache-server
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ecom-registration-server:8085/eureka/
+    depends_on:
+      - ecom-registration-server
+  ecom-gateway-server:
+    build:
+      context: ../ecom-gateway-server/
+    image: ecom-gateway-server
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ecom-registration-server:8085/eureka/
+    ports:
+      - 8086:8086
+    depends_on:
+      - ecom-registration-server
+      - ecom-cache-server
+  ecom-product-svc:
+    build:
+      context: ../ecom-product-svc/
+    image: ecom-product-svc
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ecom-registration-server:8085/eureka/
+    restart: on-failure
+    depends_on:
+      - ecom-registration-server
+      - ecom-cache-server
+      - ecom-config-server
+  ecom-cart-svc:
+    build:
+      context: ../ecom-cart-svc/
+    image: ecom-cart-svc
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://ecom-registration-server:8085/eureka/
+    restart: on-failure
+    depends_on:
+      - ecom-registration-server
+      - ecom-cache-server
+      - ecom-config-server
